@@ -17,7 +17,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:16
+        image: pgvector/pgvector:pg16
         ports: ["5432:5432"]
         env:
           POSTGRES_USER: postgres
@@ -60,7 +60,6 @@ jobs:
         run: mix test
         env:
           MIX_ENV: test
-          DATABASE_URL: ecto://postgres:postgres@localhost/myapp_test
 
   ai-review:
     name: AI Code Review (OpenAI gpt-5-mini)
