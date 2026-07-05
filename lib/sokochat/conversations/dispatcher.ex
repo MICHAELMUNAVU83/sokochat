@@ -27,14 +27,19 @@ defmodule Sokochat.Conversations.Dispatcher do
 
     with {:ok, endpoint_data} <- endpoint_data_for_dispatch(endpoint) do
       business_context =
-        Catalogs.build_workspace_context(workspace.id, endpoint_data, workspace.data_source)
+        Catalogs.build_workspace_context(
+          workspace.id,
+          endpoint_data,
+          data_source_for_dispatch(workspace, endpoint)
+        )
 
       {:ok,
        %{
          workspace: workspace,
          endpoint: Endpoints.get_endpoint(workspace.id) || endpoint,
          cta_rules: cta_rules,
-         endpoint_data: business_context,
+         business_context: business_context,
+         endpoint_data: endpoint_data,
          system_prompt:
            workspace
            |> ContextBuilder.build_system_prompt(business_context)
@@ -44,8 +49,11 @@ defmodule Sokochat.Conversations.Dispatcher do
   end
 
   def dispatch_prepared(prepared, phone_number, user_message, source \\ :playground) do
-    %{workspace: workspace, endpoint_data: endpoint_data} = prepared
+    %{workspace: workspace, endpoint_data: endpoint_data, business_context: business_context} =
+      prepared
+
     system_prompt = system_prompt_for(prepared, user_message)
+    cta_context = endpoint_data || business_context
 
     with {:ok, conversation} <-
            Conversations.get_or_create_conversation(workspace.id, phone_number, source),
@@ -55,7 +63,7 @@ defmodule Sokochat.Conversations.Dispatcher do
            ),
          messages <- Conversations.build_messages(conversation.id, user_message),
          {:ok, reply} <- OpenAIClient.chat(messages, system_prompt),
-         final_cta = ProductCTA.attach(reply.reply, user_message, endpoint_data, reply.cta),
+         final_cta = ProductCTA.attach(reply.reply, user_message, cta_context, reply.cta),
          {:ok, assistant_message} <-
            Conversations.add_message(conversation, :assistant, reply.reply,
              cta: final_cta,
@@ -72,7 +80,11 @@ defmodule Sokochat.Conversations.Dispatcher do
   # to the buyer's message (RAG). The prompt stays a constant size no matter how
   # large the catalog is, and the bot always sees the right products.
   defp system_prompt_for(
-         %{workspace: %Workspace{data_source: "manual"} = workspace, cta_rules: cta_rules},
+         %{
+           workspace: %Workspace{data_source: "manual"} = workspace,
+           endpoint: nil,
+           cta_rules: cta_rules
+         },
          user_message
        ) do
     retrieved = Retriever.search(workspace.id, user_message)
@@ -89,19 +101,19 @@ defmodule Sokochat.Conversations.Dispatcher do
   defp system_prompt_for(
          %{
            workspace: workspace,
-           endpoint_data: endpoint_data,
+           business_context: business_context,
            cta_rules: cta_rules,
            system_prompt: system_prompt
          },
          user_message
        ) do
-    case ContextBuilder.detect_focus_category(endpoint_data, user_message) do
+    case ContextBuilder.detect_focus_category(business_context, user_message) do
       nil ->
         system_prompt
 
       category ->
         workspace
-        |> ContextBuilder.build_system_prompt(endpoint_data, focus_category: category)
+        |> ContextBuilder.build_system_prompt(business_context, focus_category: category)
         |> CtaInjector.inject_cta_rules(cta_rules)
     end
   end
@@ -124,6 +136,10 @@ defmodule Sokochat.Conversations.Dispatcher do
       {:error, reason} -> {:error, reason}
     end
   end
+
+  defp data_source_for_dispatch(%Workspace{data_source: "api"}, _endpoint), do: "api"
+  defp data_source_for_dispatch(_workspace, nil), do: "manual"
+  defp data_source_for_dispatch(_workspace, _endpoint), do: "api"
 
   defp cta_rules_for(workspace_id) do
     module = Sokochat.CTARules

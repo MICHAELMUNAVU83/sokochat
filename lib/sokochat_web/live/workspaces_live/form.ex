@@ -102,6 +102,7 @@ defmodule SokochatWeb.WorkspacesLive.Form do
         <.link navigate={~p"/workspaces"} class="transition hover:text-n400">Workspaces</.link>
         <span>/</span>
         <span class="text-n400">{@page_title}</span>
+        <span :if={@current_user} class="ml-auto text-n400">{@current_user.name}</span>
       </nav>
 
       <div class="overflow-hidden rounded-2xl border border-n300 bg-n50 shadow-[0_8px_24px_rgba(0,0,0,0.05)]">

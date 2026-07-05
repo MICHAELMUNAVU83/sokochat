@@ -44,8 +44,8 @@ defmodule Sokochat.AI.Embedder do
 
   defp request_options(config, payload) do
     default_options =
-      Process.get(:openai_req_options) ||
-        Application.get_env(:sokochat, :openai_req_options, [])
+      Process.get(:embeddings_req_options) ||
+        Application.get_env(:sokochat, :embeddings_req_options, [])
 
     default_options
     |> Keyword.merge(

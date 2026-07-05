@@ -4,7 +4,7 @@ defmodule SokochatWeb.HomeLive.Components do
   def page(assigns) do
     ~H"""
     <div class="bg-n50 text-n800">
-      <.landing_header />
+      <.landing_header current_user={@current_user} />
       <.hero />
       <.services />
       <.accordion_showcase />
@@ -73,8 +73,25 @@ defmodule SokochatWeb.HomeLive.Components do
         </nav>
 
         <div class="ml-auto hidden items-center gap-4 lg:flex">
-          <a href="/users/log_in" class="btn btn-secondary btn-sm">Login</a>
-          <a href="/users/register" class="btn btn-primary btn-sm">Get Started</a>
+          <%= if @current_user do %>
+            <a
+              href="/users/settings"
+              class="text-sm font-semibold text-n800 no-underline hover:text-primary"
+            >
+              {@current_user.email}
+            </a>
+            <a
+              href="/users/log_out"
+              data-method="delete"
+              rel="nofollow"
+              class="btn btn-secondary btn-sm"
+            >
+              Log out
+            </a>
+          <% else %>
+            <a href="/users/log_in" class="btn btn-secondary btn-sm">Login</a>
+            <a href="/users/register" class="btn btn-primary btn-sm">Get Started</a>
+          <% end %>
         </div>
 
         <input type="checkbox" id="nav-toggle" class="peer hidden" />
@@ -112,8 +129,22 @@ defmodule SokochatWeb.HomeLive.Components do
           <a href="#" class="p-2 text-n800 no-underline hover:text-primary">Book a Demo</a>
           <a href="#" class="p-2 text-n800 no-underline hover:text-primary">Careers</a>
           <div class="mt-3 flex flex-col gap-3">
-            <a href="#" class="btn btn-secondary btn-sm w-full">Login</a>
-            <a href="#" class="btn btn-primary btn-sm w-full">Get Started</a>
+            <%= if @current_user do %>
+              <a href="/users/settings" class="btn btn-secondary btn-sm w-full">
+                {@current_user.email}
+              </a>
+              <a
+                href="/users/log_out"
+                data-method="delete"
+                rel="nofollow"
+                class="btn btn-secondary btn-sm w-full"
+              >
+                Log out
+              </a>
+            <% else %>
+              <a href="/users/log_in" class="btn btn-secondary btn-sm w-full">Login</a>
+              <a href="/users/register" class="btn btn-primary btn-sm w-full">Get Started</a>
+            <% end %>
           </div>
         </nav>
       </div>
@@ -127,8 +158,9 @@ defmodule SokochatWeb.HomeLive.Components do
       <div class="container-x">
         <div class="grid items-center gap-14 lg:grid-cols-[1.25fr_1fr]">
           <div class="flex flex-col items-start gap-6 text-center lg:text-left">
-            <div class="section-title w-full lg:w-auto">AI-powered WhatsApp sales assistant</div>
+            <div class="section-title w-full lg:w-auto">Your always-on WhatsApp sales team</div>
             <h1 class="h1 w-full">
+              <span class="sr-only">Turn WhatsApp conversations into</span>
               Turn
               <span class="relative whitespace-nowrap text-primary">
                 WhatsApp
@@ -148,9 +180,9 @@ defmodule SokochatWeb.HomeLive.Components do
                   />
                 </svg>
               </span>
-              Conversations  into
+              conversations into
               <span class="relative whitespace-nowrap text-primary">
-                SALES
+                sales
                 <svg
                   class="absolute -bottom-1 left-0 w-full"
                   height="10"
@@ -167,10 +199,10 @@ defmodule SokochatWeb.HomeLive.Components do
                   />
                 </svg>
               </span>
-              With  Sokochat
+              with Sokochat
             </h1>
             <p class="w-full text-lg font-medium text-n400">
-              Sokochat lets any business create and run an AI-powered WhatsApp chatbot without code. Connect your own data source, keep answers current, and test the full WhatsApp experience in the browser before you go live.
+              Built for merchants, marketplaces, and growing teams across East Africa. Sokochat lets any business create and run an AI-powered WhatsApp chatbot without code.
             </p>
             <div class="flex w-full flex-wrap items-center justify-center gap-x-6 gap-y-4 lg:justify-start">
               <a href="#pricing" class="btn btn-primary btn-lg">Get Started</a>

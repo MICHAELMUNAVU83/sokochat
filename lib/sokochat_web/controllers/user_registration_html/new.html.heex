@@ -6,7 +6,7 @@
         <div class="mb-8">
           <div class="section-title">Get started</div>
           <h1 class="mt-1 text-[28px] font-semibold leading-tight text-n900">
-            Create your account
+            Register
           </h1>
           <p class="mt-2 text-sm text-n400">
             Already registered?
@@ -20,7 +20,7 @@
           </p>
         </div>
 
-        <.form :let={f} for={@changeset} action={~p"/users/register"} class="flex flex-col gap-5">
+        <.form :let={f} for={@form} action={~p"/users/register"} class="flex flex-col gap-5">
           <div
             :if={@changeset.action == :insert}
             class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
@@ -40,8 +40,8 @@
               placeholder="Jane Doe"
               class="rounded-lg border border-n300 bg-n50 px-4 py-3 text-base text-n800 placeholder:text-n400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
-            <p :for={msg <- translate_errors(f[:name].errors, :name)} class="text-sm text-red-600">
-              {msg}
+            <p :for={error <- f[:name].errors} class="text-sm text-red-600">
+              {translate_error(error)}
             </p>
           </div>
 
@@ -57,11 +57,8 @@
               placeholder="you@example.com"
               class="rounded-lg border border-n300 bg-n50 px-4 py-3 text-base text-n800 placeholder:text-n400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
-            <p
-              :for={msg <- translate_errors(f[:email].errors, :email)}
-              class="text-sm text-red-600"
-            >
-              {msg}
+            <p :for={error <- f[:email].errors} class="text-sm text-red-600">
+              {translate_error(error)}
             </p>
           </div>
 
@@ -76,11 +73,8 @@
               placeholder="••••••••"
               class="rounded-lg border border-n300 bg-n50 px-4 py-3 text-base text-n800 placeholder:text-n400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
-            <p
-              :for={msg <- translate_errors(f[:password].errors, :password)}
-              class="text-sm text-red-600"
-            >
-              {msg}
+            <p :for={error <- f[:password].errors} class="text-sm text-red-600">
+              {translate_error(error)}
             </p>
           </div>
 

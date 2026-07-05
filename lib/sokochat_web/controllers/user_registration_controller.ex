@@ -7,7 +7,7 @@ defmodule SokochatWeb.UserRegistrationController do
 
   def new(conn, _params) do
     changeset = Accounts.change_user_registration(%User{})
-    render(conn, :new, changeset: changeset)
+    render(conn, :new, changeset: changeset, form: Phoenix.Component.to_form(changeset))
   end
 
   def create(conn, %{"user" => user_params}) do
@@ -24,7 +24,7 @@ defmodule SokochatWeb.UserRegistrationController do
         |> UserAuth.log_in_user(user, %{"redirect_to" => ~p"/workspaces/new"})
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        render(conn, :new, changeset: changeset)
+        render(conn, :new, changeset: changeset, form: Phoenix.Component.to_form(changeset))
     end
   end
 end

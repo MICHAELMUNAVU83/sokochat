@@ -11,7 +11,7 @@ defmodule SokochatWeb.HomeLive.Index do
   @impl true
   def render(assigns) do
     ~H"""
-    <HomeComponents.page />
+    <HomeComponents.page current_user={@current_user} />
     """
   end
 end

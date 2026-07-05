@@ -21,7 +21,13 @@ defmodule Sokochat.CTARules.CTARule do
   def changeset(cta_rule, attrs) do
     cta_rule
     |> cast(attrs, [:workspace_id, :trigger_description, :cta_type, :cta_payload, :priority])
-    |> validate_required([:workspace_id, :trigger_description, :cta_type, :cta_payload, :priority])
+    |> validate_required([
+      :workspace_id,
+      :trigger_description,
+      :cta_type,
+      :cta_payload,
+      :priority
+    ])
     |> validate_length(:trigger_description, min: 5, max: 500)
     |> validate_inclusion(:cta_type, @cta_types)
     |> validate_number(:priority, greater_than_or_equal_to: 1)

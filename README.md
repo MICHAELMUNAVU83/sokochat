@@ -50,9 +50,9 @@ Open http://localhost:4000.
 
 The seed script creates confirmed users and resets these seed account passwords each time it runs.
 
-| Use | Email | Password |
-| --- | --- | --- |
-| Demo workspace owner | `demo@sokochat.local` | `password123` |
+| Use                     | Email                     | Password      |
+| ----------------------- | ------------------------- | ------------- |
+| Demo workspace owner    | `demo@sokochat.local`     | `password123` |
 | Regular workspace owner | `merchant@sokochat.local` | `password123` |
 
 You can override them with `SEED_USER_EMAIL`, `SEED_USER_PASSWORD`, `SEED_REGULAR_USER_EMAIL`, and `SEED_REGULAR_USER_PASSWORD`.
@@ -71,6 +71,26 @@ mix assets.deploy
 ```
 
 `mix credo` runs static analysis using `.credo.exs`. `mix ecto.reset` is destructive because it drops and recreates the database. There are no intentionally blocked aliases in `mix.exs`.
+
+## Opening a Pull Request
+
+Before opening a pull request:
+
+1. Run `./scripts/check_linters.sh` and fix any formatting, Credo, or test failures.
+2. Fill out the pull request summary, changes, and how-to-test sections.
+3. Add screenshots or screen recordings for UI changes. Use `N/A` when there are no visual changes.
+4. Complete the pull request checklist, including docs, migrations, seeds, and secrets checks when relevant.
+
+### Commit Messages
+
+Use the format `name/what-pr-does` for commit messages.
+
+Examples:
+
+```sh
+michael/add-lab-order-filters
+sarah/fix-prescription-validation
+```
 
 ## Documentation
 
