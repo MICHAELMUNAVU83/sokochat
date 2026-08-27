@@ -2,10 +2,10 @@
 #
 #     mix run priv/repo/seeds.exs
 #
-# This seed creates a ready-to-demo workspace with:
+# This seed creates a ready-to-demo account with:
 #   * a confirmed owner user
-#   * a workspace with practical AI instructions
-#   * a sample product endpoint + cached catalog data
+#   * GS1 Kenya and Shamba Ikonet workspaces
+#   * a product catalog for each workspace
 #   * CTA rules for the common WhatsApp interaction types
 #   * optional Meta credentials from `.env` / shell env
 #
@@ -68,10 +68,8 @@ end
 
 seed_email = env_value.("SEED_USER_EMAIL", "demo@sokochat.local")
 seed_password = env_value.("SEED_USER_PASSWORD", "password123")
-regular_email = env_value.("SEED_REGULAR_USER_EMAIL", "merchant@sokochat.local")
-regular_password = env_value.("SEED_REGULAR_USER_PASSWORD", "password123")
-workspace_name = env_value.("SEED_WORKSPACE_NAME", "Sokopawa Market")
-workspace_slug = env_value.("WA_WORKSPACE_SLUG", "sokopawa")
+workspace_name = env_value.("SEED_WORKSPACE_NAME", "GS1 Kenya")
+workspace_slug = env_value.("WA_WORKSPACE_SLUG", "gs1-kenya")
 
 ensure_seed_user = fn email, name, password ->
   user =
@@ -104,8 +102,7 @@ ensure_seed_user = fn email, name, password ->
   end
 end
 
-seed_user = ensure_seed_user.(seed_email, "Sokopawa Demo", seed_password)
-regular_user = ensure_seed_user.(regular_email, "Merchant User", regular_password)
+seed_user = ensure_seed_user.(seed_email, "Demo Business Owner", seed_password)
 
 workspace =
   case Repo.one(
@@ -123,7 +120,7 @@ workspace =
             name: workspace_name,
             language: "both",
             ai_instructions: """
-            You are Sokopawa's WhatsApp sales assistant for a Nairobi-based shop.
+            You are GS1 Kenya's WhatsApp assistant.
             Answer in a warm, concise way. Keep replies short enough for WhatsApp.
             Prefer specific product suggestions with price, stock status, delivery timing,
             and the best next action. If the buyer sounds ready to act, prefer a CTA over a
@@ -143,14 +140,14 @@ workspace =
     slug: workspace_slug,
     language: "both",
     data_source: "manual",
-    company_name: "Sokopawa Market",
-    industry: "Retail and grocery",
-    location: "Moi Avenue, Nairobi CBD, Kenya",
+    company_name: "GS1 Kenya",
+    industry: "Standards and business services",
+    location: "Nairobi, Kenya",
     phone_number: "+254700000001",
     about:
-      "A Nairobi retail shop selling fresh produce, pantry staples, and everyday home goods.",
+      "GS1 Kenya provides globally recognized barcodes, identification standards, and business support services.",
     ai_instructions: """
-    You are Sokopawa's WhatsApp sales assistant for a Nairobi-based shop.
+    You are GS1 Kenya's WhatsApp assistant.
     Answer in a warm, concise way. Keep replies short enough for WhatsApp.
     Prefer specific product suggestions with price, stock status, delivery timing,
     and the best next action. If the buyer sounds ready to act, prefer a CTA over a
@@ -159,10 +156,10 @@ workspace =
   })
   |> Repo.update!()
 
-regular_workspace =
+shamba_workspace =
   case Repo.one(
          from w in Workspace,
-           where: w.account_id == ^regular_user.id and w.slug == "mtaa-bakery",
+           where: w.account_id == ^seed_user.id and w.slug == "shamba-ikonet",
            limit: 1
        ) do
     %Workspace{} = workspace ->
@@ -172,86 +169,74 @@ regular_workspace =
       {:ok, workspace} =
         Workspaces.create_workspace(
           %{
-            name: "Mtaa Bakery",
-            language: "en",
+            name: "Shamba Ikonet",
+            language: "both",
             ai_instructions:
-              "You are a helpful WhatsApp assistant for a neighborhood bakery. Share menu details and guide customers to call for custom cake orders."
+              "You are Shamba Ikonet's friendly WhatsApp produce assistant. Help customers choose fresh vegetables, state prices clearly, and explain delivery options."
           },
-          regular_user.id
+          seed_user.id
         )
 
       workspace
   end
 
-regular_workspace
-|> Workspace.changeset(%{
-  name: "Mtaa Bakery",
-  slug: "mtaa-bakery",
-  language: "en",
-  data_source: "manual",
-  company_name: "Mtaa Bakery",
-  industry: "Bakery",
-  location: "Kilimani, Nairobi, Kenya",
-  phone_number: "+254700000003",
-  about: "A neighborhood bakery for breads, cakes, and snacks."
-})
-|> Repo.update!()
+shamba_workspace =
+  shamba_workspace
+  |> Workspace.changeset(%{
+    name: "Shamba Ikonet",
+    slug: "shamba-ikonet",
+    language: "both",
+    data_source: "manual",
+    company_name: "Shamba Ikonet",
+    industry: "Fresh produce and agriculture",
+    location: "Nairobi, Kenya",
+    phone_number: "+254700000003",
+    about: "A farm-to-market business selling fresh, locally grown vegetables.",
+    ai_instructions:
+      "You are Shamba Ikonet's friendly WhatsApp produce assistant. Help customers choose fresh vegetables, state prices clearly, and explain delivery options."
+  })
+  |> Repo.update!()
 
 catalog_data = %{
   "shop" => %{
-    "name" => "Sokopawa Market",
+    "name" => "GS1 Kenya",
     "city" => "Nairobi",
     "hours" => "Mon-Sat 8:00-20:00",
-    "delivery" => "Same-day in Nairobi for orders placed before 4pm"
+    "delivery" => "Digital onboarding details are sent after payment"
   },
   "categories" => [
-    %{"title" => "Fresh Produce", "description" => "Everyday fruits and vegetables"},
-    %{"title" => "Pantry", "description" => "Rice, flour, oil, and staples"},
-    %{"title" => "Home", "description" => "Household basics and cleaning"}
+    %{"title" => "Barcodes", "description" => "GS1 identification and barcode services"},
+    %{"title" => "Training", "description" => "Standards and implementation support"}
   ],
   "items" => [
     %{
-      "id" => "tomatoes-premium",
-      "name" => "Premium Tomatoes",
-      "title" => "Premium Tomatoes",
-      "description" => "Fresh red tomatoes sold per kilo.",
-      "price" => 120,
+      "id" => "barcode-starter-package",
+      "name" => "Barcode Starter Package",
+      "title" => "Barcode Starter Package",
+      "description" => "GS1 barcode registration and onboarding for a growing business.",
+      "price" => 7500,
       "currency" => "KES",
-      "category" => "Fresh Produce",
+      "category" => "Barcodes",
       "stock_status" => "in_stock",
       "image_url" =>
         "https://images.unsplash.com/photo-1546094096-0df4bcaaa337?auto=format&fit=crop&w=1200&q=80",
-      "url" => "https://shop.example.com/products/tomatoes-premium",
+      "url" => "https://www.gs1kenya.org/",
       "phone" => "+254700000001",
       "whatsapp_number" => "+254700000002"
     },
     %{
-      "id" => "red-onions",
-      "name" => "Red Onions",
-      "title" => "Red Onions",
-      "description" => "Clean, medium-sized red onions sold per kilo.",
-      "price" => 95,
+      "id" => "gs1-standards-training",
+      "name" => "GS1 Standards Training",
+      "title" => "GS1 Standards Training",
+      "description" =>
+        "Practical training on product identification, barcodes, and traceability.",
+      "price" => 5000,
       "currency" => "KES",
-      "category" => "Fresh Produce",
+      "category" => "Training",
       "stock_status" => "in_stock",
       "image_url" =>
         "https://images.unsplash.com/photo-1508747703725-719777637510?auto=format&fit=crop&w=1200&q=80",
-      "url" => "https://shop.example.com/products/red-onions",
-      "phone" => "+254700000001",
-      "whatsapp_number" => "+254700000002"
-    },
-    %{
-      "id" => "classic-hoodie",
-      "name" => "Classic Hoodie",
-      "title" => "Classic Hoodie",
-      "description" => "Soft unisex hoodie available in black, grey, and navy.",
-      "price" => 3500,
-      "currency" => "KES",
-      "category" => "Home",
-      "stock_status" => "limited_stock",
-      "image_url" =>
-        "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=80",
-      "url" => "https://shop.example.com/products/classic-hoodie",
+      "url" => "https://www.gs1kenya.org/",
       "phone" => "+254700000001",
       "whatsapp_number" => "+254700000002"
     }
@@ -260,7 +245,7 @@ catalog_data = %{
 
 {:ok, endpoint} =
   Endpoints.upsert_endpoint(workspace.id, %{
-    "url" => "https://example.com/sokopawa/catalog.json",
+    "url" => "https://example.com/gs1-kenya/catalog.json",
     "method" => "GET",
     "headers" => %{"Accept" => "application/json"},
     "refresh_strategy" => "poll_300s",
@@ -270,7 +255,7 @@ catalog_data = %{
 
 {:ok, catalog} =
   Catalogs.upsert_catalog(workspace.id, %{
-    "name" => "Sokopawa product catalog",
+    "name" => "GS1 Kenya service catalog",
     "entity_label" => "product",
     "context_notes" =>
       "Use category, stock_status, delivery_notes, and SKU metadata to answer product questions."
@@ -350,6 +335,127 @@ Enum.each(catalog_items, fn attrs ->
   {:ok, _item} = Catalogs.upsert_item(catalog, attrs)
 end)
 
+{:ok, shamba_catalog} =
+  Catalogs.upsert_catalog(shamba_workspace.id, %{
+    "name" => "Shamba Ikonet vegetable catalog",
+    "entity_label" => "vegetable",
+    "context_notes" =>
+      "Prices are in Kenyan shillings per stated unit. Use category, stock status, unit, and delivery notes when helping customers."
+  })
+
+Enum.each(fields, fn attrs ->
+  attrs =
+    case Repo.get_by(Field, catalog_id: shamba_catalog.id, key: attrs["key"]) do
+      nil -> attrs
+      %Field{id: id} -> Map.put(attrs, "id", id)
+    end
+
+  {:ok, _field} = Catalogs.upsert_field(shamba_catalog, attrs)
+end)
+
+shamba_items = [
+  %{
+    "external_id" => "fresh-tomatoes",
+    "title" => "Fresh Tomatoes",
+    "description" => "Ripe, firm, locally grown tomatoes sold per kilogram.",
+    "price" => 120,
+    "currency" => "KES",
+    "image_url" =>
+      "https://images.unsplash.com/photo-1546094096-0df4bcaaa337?auto=format&fit=crop&w=1200&q=80",
+    "metadata" => %{
+      "category" => "Vegetables",
+      "stock_status" => "in_stock",
+      "unit" => "1 kg",
+      "delivery_notes" => "Same-day delivery in Nairobi for orders placed before 2pm"
+    }
+  },
+  %{
+    "external_id" => "sukuma-wiki",
+    "title" => "Sukuma Wiki",
+    "description" => "Freshly harvested collard greens bundled on the day of delivery.",
+    "price" => 50,
+    "currency" => "KES",
+    "image_url" =>
+      "https://images.unsplash.com/photo-1576045057995-568f588f82fb?auto=format&fit=crop&w=1200&q=80",
+    "metadata" => %{
+      "category" => "Leafy Vegetables",
+      "stock_status" => "in_stock",
+      "unit" => "1 bunch",
+      "delivery_notes" => "Same-day delivery in Nairobi for orders placed before 2pm"
+    }
+  },
+  %{
+    "external_id" => "spinach-bunch",
+    "title" => "Fresh Spinach",
+    "description" => "Tender green spinach, cleaned and tied in a generous bunch.",
+    "price" => 60,
+    "currency" => "KES",
+    "image_url" =>
+      "https://images.unsplash.com/photo-1576045057995-568f588f82fb?auto=format&fit=crop&w=1200&q=80",
+    "metadata" => %{
+      "category" => "Leafy Vegetables",
+      "stock_status" => "in_stock",
+      "unit" => "1 bunch",
+      "delivery_notes" => "Same-day delivery in Nairobi for orders placed before 2pm"
+    }
+  },
+  %{
+    "external_id" => "red-onions",
+    "title" => "Red Onions",
+    "description" => "Clean, medium-sized red onions sold per kilogram.",
+    "price" => 110,
+    "currency" => "KES",
+    "image_url" =>
+      "https://images.unsplash.com/photo-1508747703725-719777637510?auto=format&fit=crop&w=1200&q=80",
+    "metadata" => %{
+      "category" => "Vegetables",
+      "stock_status" => "in_stock",
+      "unit" => "1 kg",
+      "delivery_notes" => "Same-day delivery in Nairobi for orders placed before 2pm"
+    }
+  },
+  %{
+    "external_id" => "green-capsicum",
+    "title" => "Green Capsicum",
+    "description" => "Crisp green capsicum suitable for salads, stews, and stir-fries.",
+    "price" => 180,
+    "currency" => "KES",
+    "image_url" =>
+      "https://images.unsplash.com/photo-1563565375-f3fdfdbefa83?auto=format&fit=crop&w=1200&q=80",
+    "metadata" => %{
+      "category" => "Vegetables",
+      "stock_status" => "in_stock",
+      "unit" => "1 kg",
+      "delivery_notes" => "Same-day delivery in Nairobi for orders placed before 2pm"
+    }
+  }
+]
+
+shamba_catalog_items =
+  shamba_items
+  |> Enum.with_index(1)
+  |> Enum.map(fn {attrs, sort_order} ->
+    attrs
+    |> Map.put("phone_number", "+254700000003")
+    |> Map.put("whatsapp_number", "+254700000003")
+    |> Map.put("source", "manual")
+    |> Map.put("status", "active")
+    |> Map.put("sort_order", sort_order)
+  end)
+
+Enum.each(shamba_catalog_items, fn attrs ->
+  attrs =
+    case Repo.get_by(Item,
+           catalog_id: shamba_catalog.id,
+           external_id: attrs["external_id"]
+         ) do
+      nil -> attrs
+      %Item{id: id} -> Map.put(attrs, "id", id)
+    end
+
+  {:ok, _item} = Catalogs.upsert_item(shamba_catalog, attrs)
+end)
+
 rules = [
   %{
     cta_type: "website",
@@ -389,9 +495,8 @@ rules = [
       "title" => "Browse categories",
       "body" => "Choose a category to explore",
       "items" => [
-        %{"title" => "Fresh Produce", "description" => "Tomatoes, onions, greens, and more"},
-        %{"title" => "Pantry", "description" => "Staples for everyday cooking"},
-        %{"title" => "Home", "description" => "Useful extras for the house"}
+        %{"title" => "Barcodes", "description" => "Identification and barcode services"},
+        %{"title" => "Training", "description" => "Standards and implementation support"}
       ]
     }
   },
@@ -399,17 +504,16 @@ rules = [
     cta_type: "location",
     trigger_description: "When the buyer asks where the shop is located or wants directions",
     cta_payload: %{
-      "title" => "Sokopawa Market",
-      "address" => "Moi Avenue, Nairobi CBD, Kenya",
+      "title" => "GS1 Kenya",
+      "address" => "Nairobi, Kenya",
       "latitude" => -1.2833,
       "longitude" => 36.8167
     }
   },
   %{
     cta_type: "catalog",
-    trigger_description:
-      "When the buyer specifically asks to see the Classic Hoodie product card",
-    cta_payload: %{"product_id" => "classic-hoodie"}
+    trigger_description: "When the buyer specifically asks to see the Barcode Starter Package",
+    cta_payload: %{"product_id" => "barcode-starter-package"}
   },
   %{
     cta_type: "custom",
@@ -478,16 +582,15 @@ Sokochat demo data ready
 
   Owner email:     #{seed_user.email}
   Owner password:  #{seed_password}
-  User email:      #{regular_user.email}
-  User password:   #{regular_password}
   Workspace:       #{workspace.name} (id: #{workspace.id})
   Workspace slug:  #{workspace.slug}
-  Second workspace: #{regular_workspace.name} (id: #{regular_workspace.id})
+  Second workspace: #{shamba_workspace.name} (id: #{shamba_workspace.id})
   Dashboard:       #{dashboard_path}
   Meta page:       #{meta_path}
   Endpoint URL:    #{endpoint.url}
   CTA rules:       #{length(rules)} seeded
-  Catalog items:   #{length(catalog_items)}
+  GS1 items:       #{length(catalog_items)}
+  Shamba items:    #{length(shamba_catalog_items)}
 """)
 
 case connection_result do
